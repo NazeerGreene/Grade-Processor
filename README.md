@@ -1,2 +1,2 @@
 # LetterGrader
-C++ Final Project: Letter Grader Using Object Oriented Programming and Linked List
+C++ Final Project: Grade Processor Using Object Oriented Programming and Linked List
