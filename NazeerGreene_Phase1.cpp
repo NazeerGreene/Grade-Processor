@@ -16,21 +16,21 @@ void insertInAlphaOrder(T** root, std::string& info) {
     if (*root == nullptr) { //linked list is empty
         *root = temp;       //initialize the head
     } // end of if
-    else if (temp->getName() < currentptr->getName()) { 
-        *root = temp; 
-        temp->setNextPtr(currentptr);
+    else if (temp->getName() < currentptr->getName()) { //new object comes before head
+        *root = temp;                                   //new object is the head
+        temp->setNextPtr(currentptr);                   //new object points to previous head
     } //end of if
-    else {
+    else {                                      //search through until correct placement is found
         T* previous = currentptr;
-        std::string tempName = temp->getName();
+        std::string tempName = temp->getName(); //reduce function calls for efficiency
            
-        while ( (currentptr != nullptr) and ( tempName > currentptr->getName() ) ) {
+        while ( (currentptr != nullptr) and ( tempName > currentptr->getName() ) ) { //while new object in wrong order
             previous = currentptr;
-            currentptr = currentptr->getNextPtr();
+            currentptr = currentptr->getNextPtr();                                   //advance
         } //end of while
-        currentptr = previous->getNextPtr(); //store previous's next ptr
-        temp->setNextPtr(currentptr);        //set temp's next ptr to previous
-        previous->insertAfter(temp);         //insert temp after previous
+        currentptr = previous->getNextPtr();
+        previous->setNextPtr(temp);
+        temp->setNextPtr(currentptr);
         } //end of else
 }; //done with insertInAlphaOrder
 
@@ -42,12 +42,12 @@ public:
     {
         processInfo(studentRec);
         setNextPtr(nextPtr);
-    }; //done with constructor
+    }; //done with valid constructor
 
-    ~student() { delete this; }; //done with deconstructor
-
-    std::string getName(void) const { return name; };       //done with getName
-    void setName(std::string& newName) { name = newName; }; //done with setName
+    std::string getName(void) const { return name; }; //done with getName
+    void setName(std::string& newName) { 
+        name = (newName == "" ? "N/A" : newName);
+    }; //done with setName
 
     void printGrades(void) const {
         for (unsigned int i = 0; i < 7; i++)
@@ -57,12 +57,12 @@ public:
 
     float numGrade(void) const {
         float numericGrade = 0;
-        for (unsigned int i = 0; i < 4; i++) { //for the first four quizzes
-            numericGrade += grades[i] * 0.1;   //calculate and add grade
+        for (unsigned int i = 0; i < 4; i++) {                       //for the first four quizzes
+            numericGrade += static_cast<float>( grades[i] * 0.1 );   //calculate and add grade
         }
-        numericGrade += grades[4] * .2; //midterm I
-        numericGrade += grades[5] * .15; //midterm II
-        numericGrade += grades[6] * .25; //final test
+        numericGrade += static_cast<float>( grades[4] * .2 ); //midterm I
+        numericGrade += static_cast<float>( grades[5] * .15 ); //midterm II
+        numericGrade += static_cast<float>( grades[6] * .25 ); //final test
         return numericGrade;
     }; //done with numGrade
 
@@ -84,9 +84,9 @@ public:
     };
 
     int getScore(int index) const {
-        if ((index >= 0) and (index < 7)) //within valid subscript range
-            return grades[index];         //return grade
-        return -1;                        //default return
+        if ( (0 <= index) and (index < 7) ) //within valid subscript range
+            return grades[index];           //return grade
+        return -1;                          //default return
     };
 
     student* getNextPtr(void) const { return nextptr; }; //done with getNextPtr
@@ -100,12 +100,13 @@ public:
 
 private:
     void processInfo(const std::string& info) {
-
+        std::string studentName;
         stringstream studentRecord(info);            //string into buffer for convenience
-        getline(studentRecord, name, ',');           //get name from buffer and store it in name attribute
+        getline(studentRecord, studentName, ',');    //get name from buffer
+        setName(studentName);                        //check for name validation
 
         for (unsigned int sub = 0; sub < 7; sub++) { //get all seven comma-delimited grades
-            string grade;                            //temp grade string
+            string grade;                            //temporary string
             getline(studentRecord, grade, ',');      //space + number stored in string
             grades[sub] = stoi(grade);               //convert and store in int array
         }
@@ -129,7 +130,18 @@ public:
     GradeBook(const std::string inputFile, const std::string outputFile)
         : clientInputFile(inputFile), clientOutputFile(outputFile), headptr(nullptr) {}; //done with constructor
 
-    bool initiate(void) {
+    //deconstructor -- delete all the nodes in the list -- freeing allocated memory
+    ~GradeBook() { 
+        T* nextptr = nullptr;
+        while (headptr != nullptr) {            //while nodes still present
+            nextptr = headptr->getNextPtr();    //store so remaining nodes aren't lost
+            //std::cout << "Deleting " << headptr->getName() << endl;
+            delete headptr;                     //delete current node
+            headptr = nextptr;                  //next node to be deleted
+        } //end of while
+    }; //done with deconstructor
+
+    bool readFileAndCreateLinkedList(void) {
         if (clientInputFile == "")
             return 0;
 
@@ -157,7 +169,7 @@ public:
         return true;
     }; //done with initiate
 
-    void displayBook(void) {
+    void displayMaxMinAvg(void) {
         processGrades();
 
         const char* assess[7]{ "Q1","Q2","Q3","Q4","MIDI","MIDII","FINAL"};
@@ -183,7 +195,7 @@ public:
         cout << endl;
     }; //end of displayBook
 
-    void storeGrades(void) const {
+    void storeStudentNameAndLetterGrade(void) const {
         if (clientOutputFile == "")
             return;
 
@@ -199,8 +211,8 @@ public:
         T* temp = headptr;
 
         while (temp != nullptr) {
-            outClientFile << left << setw(20) << temp->getName()
-                << temp->letterGrade() << endl;
+            outClientFile << left << setw(20) << temp->getName() //writing student name -- output field for formatting
+                << temp->letterGrade() << endl;                  //writing letter grade
 
             temp = temp->getNextPtr();
         }
@@ -212,34 +224,34 @@ public:
     T* getHeadPtr(void) const { return headptr; }; //done with getHeadPtr
 
 private:
-    void processGrades() {
+    void processGrades() { //helper function
         T* temp = headptr;
 
-        while (temp != nullptr) { //for each student in gradebook
+        while (temp != nullptr) {                   //for each student in gradebook
             for (unsigned int i = 0; i < 7; i++) {
-                int score = temp->getScore(i); //get there score for that assessment
+                int score = temp->getScore(i);      //get their score for that assessment
 
-                if (score > maximum[i]) //check for a new maximum per assessment
+                if (score > maximum[i])             //check for a new maximum per assessment
                     maximum[i] = score;
-                if (score < minimum[i]) //check for a new minimum per assessment
+                if (score < minimum[i])             //check for a new minimum per assessment
                     minimum[i] = score;
-                average[i] += score; //add score to average
+                average[i] += score;                //add score to average
 
-            }//done iterating over grades
-            temp = temp->getNextPtr();
-        }//done iterating over students
+            } //done iterating over grades for one student; end of for-loop
+            temp = temp->getNextPtr();              //go to next student
+        } //done iterating over students; end of while-loop
 
-        for (unsigned int i = 0; i < 7; i++) //for each average in average list
-            average[i] /= totalStudents; //divide out the total score by total students
-    };//done with processGrades
+        for (unsigned int i = 0; i < 7; i++)        //for each total score in average array
+            average[i] /= totalStudents;            //divide the total score by total students
+    }; //done with processGrades
 
 private:
     std::string clientInputFile;
     std::string clientOutputFile;
     T* headptr{ nullptr };
 
-    int minimum[7]{ 100,100,100,100,100,100,100 };
-    int maximum[7]{};
+    int minimum[7]{ 100,100,100,100,100,100,100 }; //reference point, assume the best
+    int maximum[7]{};                              //reference point, assume the worst
     float average[7]{};
     int totalStudents = 0;
 };
@@ -252,8 +264,8 @@ int main(int argc, char* args[]) {
     //}
     //GradeBook<student> book{ args[1], args[2] };
     GradeBook<student> book{ "sampleIn.txt", "sampleOut.txt" };
-    book.initiate();
-    book.displayBook();
-    book.storeGrades();
+    book.readFileAndCreateLinkedList();
+    book.displayMaxMinAvg();
+    book.storeStudentNameAndLetterGrade();
 
 }// end of main
