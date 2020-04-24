@@ -1,5 +1,8 @@
 //Processing grade data through a csv file, 04/19
-//Author: Na'zeer Greene
+//Developer: Na'zeer Greene
+//GitHub: @NazeerGreene, URL: 
+//LinkedIn: Nazeer Greene
+
 #include <fstream> // file stream        
 #include <iomanip>
 #include <string>
@@ -16,17 +19,16 @@ void insertInAlphaOrder(T** root, std::string& info) {
     if (*root == nullptr) { //linked list is empty
         *root = temp;       //initialize the head
     } // end of if
-    else if (temp->getName() < currentptr->getName()) { //new object comes before head
+    else if (*temp < *currentptr) { //new object comes before head
         *root = temp;                                   //new object is the head
         temp->setNextPtr(currentptr);                   //new object points to previous head
     } //end of if
-    else {                                      //search through until correct placement is found
+    else {                                      //object is placed somewhere after the head
         T* previous = currentptr;
-        std::string tempName = temp->getName(); //reduce function calls for efficiency
            
-        while ( (currentptr != nullptr) and ( tempName > currentptr->getName() ) ) { //while new object in wrong order
+        while ( (currentptr != nullptr) and (*temp > *currentptr) ) { //advance until correct placement is found
             previous = currentptr;
-            currentptr = currentptr->getNextPtr();                                   //advance
+            currentptr = currentptr->getNextPtr();
         } //end of while
         currentptr = previous->getNextPtr();
         previous->setNextPtr(temp);
@@ -98,6 +100,20 @@ public:
         newptr->setNextPtr(originalNextPtr);     //set the new ptr's next to the current ptr's next in case 
     };
 
+//-----------------------------OVERLOADED OPERATORS---------------------------------
+
+    bool operator>(const student& other) const {
+	return (name > other.getName()); //name-based comparison
+    }; //done with overloaded operator >
+
+    bool operator<(const student& other) const {
+	return (name < other.getName()); //name-based comparison
+    }; //done with overloaded operator <
+
+    bool operator==(const student& other) const {
+	return (name == other.getName()); //name-based comparison
+    }; //done with overloaded operator ==
+
 private:
     void processInfo(const std::string& info) {
         std::string studentName;
@@ -130,7 +146,7 @@ public:
     GradeBook(const std::string inputFile, const std::string outputFile)
         : clientInputFile(inputFile), clientOutputFile(outputFile), headptr(nullptr) {}; //done with constructor
 
-    //deconstructor -- delete all the nodes in the list -- freeing allocated memory
+    //deconstructor -- delete all the nodes in the list -- frees allocated memory
     ~GradeBook() { 
         T* nextptr = nullptr;
         while (headptr != nullptr) {            //while nodes still present
@@ -150,7 +166,7 @@ public:
 
         // exit program if ifstream could not open file
         if (!inClientFile) {
-            cerr << "File could not be opened" << endl;
+            cerr << clientInputFile << " could not be opened." << endl;
             exit(EXIT_FAILURE);
         }
 
@@ -204,7 +220,8 @@ public:
 
         // exit program if ifstream could not open file
         if (!outClientFile) {
-            cerr << "File could not be opened" << endl;
+            cerr << clientOutputFile << " could not be opened." << endl;
+	    delete this; //free allocated memory
             exit(EXIT_FAILURE);
         }
 
@@ -257,12 +274,12 @@ private:
 };
 
 int main(int argc, char* args[]) {
-
-    //if (argc != 3) {
-        //cout << args[0] << " expected input: inputFile.txt outFile.txt";
-        //exit(-1);
-    //}
-    //GradeBook<student> book{ args[1], args[2] };
+/*
+    if (argc != 3) {
+        cout << args[0] << " expected arguments: inputFile.txt outFile.txt" << endl;
+        exit(EXIT_FAILURE);
+    }
+    GradeBook<student> book{ args[1], args[2] };*/
     GradeBook<student> book{ "sampleIn.txt", "sampleOut.txt" };
     book.readFileAndCreateLinkedList();
     book.displayMaxMinAvg();
