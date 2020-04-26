@@ -1,7 +1,7 @@
 //Processing grade data through a csv file, 04/19
 //Developer: Na'zeer Greene
 //GitHub: @NazeerGreene, URL: 
-//LinkedIn: Nazeer Greene
+//LinkedIn: Nazeer Greene, URL: https://www.linkedin.com/in/na-zeer-greene-940430195
 
 #include <fstream> // file stream        
 #include <iomanip>
