@@ -1,0 +1,41 @@
+Requirements for Lettergrader Final Project Phase 1 by Na'zeer Greene
+
+What we have:
+- A comma-delimited input file where each line begins with the student name followed by 7 grades
+- Name of the output file to store the student's name and student's final grade in alphabetical order
+
+What we know:
+- Each student has a name
+- Every student will have 0 <= G <= 7 grades, where G is the amount of expected grades
+- Linked list is the target data structure to store student accounts prior to output into a file
+
+What we don't know:
+- How many students are in the input file
+
+==== Object Oriented Design ====
+
+Student Object:
+-- Attributes, private: name, grades (7), pointer to next student
+-- Behaviors, public: name getter/setter, grades getter/setter, pointer getter/setter, final grade
+	calcuator, an individual grade retriever
+-- Behavior, private: processInfo will take the comma delimited line and store its values
+-- Attributes, class: class attribute to hold total number of students
+-- Behaviors, class: subtract a student, add a student
+-- Constructor: a default constructor for an empty student object
+-- Constructor: main constructor; accepts a comma-delimited string of name followed by grades
+
+GradeBook Object:
+-- Attributes, private: pointer to head of student linked list, 3 integer arrays to hold minimum, 
+maximum, and average scores, strings for input and output files
+-- Behaviors, public: processGrades will fill the integer arrays with the min, max, and average grades
+-- Behaviors, public printMin, printMax, printAvg will all print their respective grades; printGrades will call 
+	all three.
+
+==== Main ====
+Responsiblilities:
+1. Opening input file
+2. Reading each line, creating student object by passing line into initializer
+3. Creating GradeBook object and passing to it the head pointer (first student object)
+4. Insert function to insert new student objects in linked list (ultimately alphabetical)
+5. Print grade stats
+6. Output student data to output file
